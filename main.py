@@ -1,4 +1,4 @@
-from fastapi import Depends, FastAPI, HTTPException, status
+from fastapi import Body, Depends, FastAPI, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from datetime import timedelta, datetime
@@ -91,7 +91,28 @@ def read_todos(skip: int = 0, limit: int = 100, current_user: models.User = Depe
     return todos
 
 @app.post("/todos/", response_model=schemas.Todo)
-def create_todo(todo: schemas.TodoCreate, current_user: models.User = Depends(get_current_user), db: Session = Depends(get_db)):
+def create_todo(todo: schemas.TodoCreate = Body(
+        ...,
+        examples={
+            "normal": {
+                "summary": "A normal example",
+                "description": "A normal example of a todo item.",
+                "value": {"title": "Buy milk", "description": "Buy milk from the store"},
+            },
+            "no_description": {
+                "summary": "An example with no description",
+                "value": {"title": "Call mom"},
+            },
+            "long_description": {
+                "summary": "A long description",
+                "description": "An example of a todo with a very long description to see how it's rendered in the docs.",
+                "value": {
+                    "title": "Plan vacation",
+                    "description": "1. Choose destination. 2. Book flights. 3. Book hotel. 4. Plan activities.",
+                },
+            },
+        },
+    ), current_user: models.User = Depends(get_current_user), db: Session = Depends(get_db)):
     return crud.create_todo(db=db, todo=todo, owner_id=current_user.id)
 
 @app.get("/todos/{todo_id}", response_model=schemas.Todo)

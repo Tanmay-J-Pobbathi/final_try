@@ -6,7 +6,13 @@ class TodoBase(BaseModel):
     description: Optional[str] = None
 
 class TodoCreate(TodoBase):
-    pass
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "title": "Buy Groceries",
+                "description": "Milk, Cheese, Bread"
+            }
+        }
 
 class TodoUpdate(BaseModel):
     title: Optional[str] = None
